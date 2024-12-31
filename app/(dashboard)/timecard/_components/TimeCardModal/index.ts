@@ -1,1 +1,1 @@
-export { TimeCardModal } from "./TimeCardModal";
+export { TimeCardModal } from './TimeCardModal';

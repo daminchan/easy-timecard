@@ -240,7 +240,7 @@ type TimeRecord = {
 
    ```typescript
    // 正しい例：型の再利用
-   import { type Employee } from "@/features/employee/types";
+   import { type Employee } from '@/features/employee/types';
 
    // 誤った例：型の再定義
    type Employee = {
@@ -277,11 +277,11 @@ type TimeRecord = {
 
    ```typescript
    // 正しい例：Jotaiを使用した状態管理
-   import { atom, useAtom } from "jotai";
+   import { atom, useAtom } from 'jotai';
 
    // 誤った例：異なる状態管理の混在
-   import { useState } from "react";
-   import { atom } from "jotai";
+   import { useState } from 'react';
+   import { atom } from 'jotai';
    ```
 
    理由：状態管理の一貫性を保ち、予測可能性を向上

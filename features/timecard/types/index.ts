@@ -25,4 +25,4 @@ export type TimeRecord = {
 };
 
 /** 従業員の勤務状態 */
-export type WorkStatus = "not_started" | "working" | "break" | "finished";
+export type WorkStatus = 'not_started' | 'working' | 'break' | 'finished';

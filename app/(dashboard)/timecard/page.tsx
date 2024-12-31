@@ -1,4 +1,4 @@
-import { TimeCardPage } from "./TimeCardPage";
+import { TimeCardPage } from './TimeCardPage';
 
 export default function Page() {
   return <TimeCardPage />;

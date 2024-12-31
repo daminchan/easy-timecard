@@ -1,7 +1,7 @@
-import { type FC } from "react";
-import Hero from "@/components/marketing/Hero/Hero";
-import Features from "@/components/marketing/Features/Features";
-import CTAButton from "@/components/marketing/CTAButton/CTAButton";
+import { type FC } from 'react';
+import Hero from '@/components/marketing/Hero/Hero';
+import Features from '@/components/marketing/Features/Features';
+import CTAButton from '@/components/marketing/CTAButton/CTAButton';
 
 const MarketingPage: FC = () => {
   return (

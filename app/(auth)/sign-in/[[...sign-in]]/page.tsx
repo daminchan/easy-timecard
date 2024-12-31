@@ -1,4 +1,4 @@
-import { SignIn } from "@clerk/nextjs";
+import { SignIn } from '@clerk/nextjs';
 
 export default function SignInPage() {
   return (
@@ -14,8 +14,8 @@ export default function SignInPage() {
           <SignIn
             appearance={{
               elements: {
-                formButtonPrimary: "bg-primary-600 hover:bg-primary-500",
-                footerActionLink: "text-primary-600 hover:text-primary-500",
+                formButtonPrimary: 'bg-primary-600 hover:bg-primary-500',
+                footerActionLink: 'text-primary-600 hover:text-primary-500',
               },
             }}
           />
