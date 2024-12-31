@@ -1,0 +1,69 @@
+```md
+# コンポーネント設計の最適化
+次の指示に従ってコンポーネント設計を最適化してください。
+コメントによるコードの省略は禁止。
+
+## 冗長なハンドラを避ける
+  - 単純な値設定などは、専用のhandle関数を作らず、DOMのonChangeやonClickなどの属性で直接ロジックを記述します。
+  これにより、DOMとロジックの関係性が明確になり、コード全体の可読性が向上します。
+
+## スタイルの最小限化
+  - 汎用コンポーネントには設計上不可欠なスタイルのみを適用し、変更可能なものは下層で行う。
+  - コンポーネント単体で必要なスタイルのみ付与し、変更の影響を局所化することで保守性を高める。
+
+  ### mui
+    - コンポーネントのpropsで受け取れるプロパティに関してはsxで指定しない。
+    - コンポーネントのpropsで受け取れないプロパティに関してはsxで指定する。
+
+## ディレクトリとimport構造
+  - 再利用性のあるコンポーネントはfeaturesフォルダに配置し、ドメイン知識の有無で分類します。
+  - ページ固有のコンポーネントは_componentsフォルダに配置し、他のページからの意図しないimportを防止します。
+
+## コンポーネントの構成とexportの制限
+  - 子コンポーネントの使用範囲を1つ上の階層の親に限定し、index.tsファイルのリレー構造で制御すること。
+    - 意図しない階層からのimportが防止できる。
+    - ディレクトリ構造とコンポーネントの構造が一致する。
+  例：
+    ┣━ _components
+    ┃   ┣ ComponentA
+    ┃   ┃   ┣ ComponentA.tsx // ComponentBとComponentCを使用する
+    ┃   ┃   ┣ ComponentB
+    ┃   ┃   ┃   ┣ ComponentB.tsx
+    ┃   ┃   ┃   ┗ index.ts // ComponentBをexport
+    ┃   ┃   ┣ ComponentC
+    ┃   ┃   ┃   ┣ ComponentC.tsx
+    ┃   ┃   ┃   ┗ index.ts // ComponentCをexport
+    ┃       ┗ index.ts // ComponentAをexport
+    ┣━ _hooks
+    ┃   ┣ use****.ts
+    ┃   ┗ index.ts
+    ┗━ page.tsx // ComponentAを使用する
+  - 要素を並べるとき、それぞれが固定幅ならGrid、変動するならFlexを使う
+  - page.tsxは const Page: FC = () => {} で定義すること。
+
+## 命名と型
+  - mapメソッドの引数や型は実態に合ったものにすることで、読みやすく、タイプセーフなコードを目指す。
+  - イベントハンドラはhandle****という関数を作成せず、要素に直接定義すること。
+  - 型はinterfaceではなくtypeを使って統一。
+  - Reactの型はFC<Props>で統一。FCは明示的にimportすること。 import { FC } from 'react'
+  - import React from 'react' は不要。
+  - importのtypeは明示的にする。 import { SomeType } from 'xxx'
+  - コンポーネントファイルの命名はコンポーネント名.tsxとする。
+  - 親コンポーネントで子コンポーネントの型を定義する。
+    例：
+    import { Hoge } from './Hoge'
+
+    type HogeProps = ComponentProps<typeof Hoge>
+    type Props = {
+      /** Hogeをクリックした時のコールバック */
+      onClickHoge: HogeProps['onClick']
+    }
+
+## 可読性の向上
+  - Props型の各プロパティに説明コメントを記述する。
+  - JSDocを使ってコンポーネント、関数の説明を記述する。(@param,@description,@exampleなど)
+  - 条件分岐が複雑な場合は、if文の前後に説明コメントを記述する。
+
+## リファクタルール
+  - 実際のPageの実装は`〇〇〇〇Page` といった名前のクライアントコンポーネントを同じディレクトリ内に作成し、実装する
+```
