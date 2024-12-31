@@ -116,12 +116,31 @@ type TimeRecord = {
 │   │   ├── admin/
 │   │   │   ├── _components/
 │   │   │   │   ├── EmployeeManagement/
+│   │   │   │   │   ├── EmployeeForm/
+│   │   │   │   │   │   ├── EmployeeForm.tsx
+│   │   │   │   │   │   └── index.ts
+│   │   │   │   │   ├── EmployeeList/
+│   │   │   │   │   │   ├── EmployeeList.tsx
+│   │   │   │   │   │   └── index.ts
+│   │   │   │   │   └── index.ts
 │   │   │   │   └── TimeRecordManagement/
+│   │   │   │       ├── TimeRecordList/
+│   │   │   │       │   ├── TimeRecordList.tsx
+│   │   │   │       │   └── index.ts
+│   │   │   │       ├── TimeRecordFilter/
+│   │   │   │       │   ├── TimeRecordFilter.tsx
+│   │   │   │       │   └── index.ts
+│   │   │   │       └── index.ts
 │   │   │   ├── employees/
-│   │   │   │   └── page.tsx
+│   │   │   │   ├── _components/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── EmployeesPage.tsx
 │   │   │   ├── time-records/
-│   │   │   │   └── page.tsx
-│   │   │   └── page.tsx
+│   │   │   │   ├── _components/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── TimeRecordsPage.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── AdminPage.tsx
 │   │   └── timecard/
 │   │       ├── _components/
 │   │       │   ├── EmployeeList/
@@ -139,6 +158,15 @@ type TimeRecord = {
 │   ├── ui/
 │   │   └── shadcn-uiコンポーネント
 │   ├── common/
+│   │   ├── DataTable/
+│   │   │   ├── DataTable.tsx
+│   │   │   └── index.ts
+│   │   ├── FilterForm/
+│   │   │   ├── FilterForm.tsx
+│   │   │   └── index.ts
+│   │   ├── Pagination/
+│   │   │   ├── Pagination.tsx
+│   │   │   └── index.ts
 │   │   ├── ErrorBoundary/
 │   │   ├── LoadingSpinner/
 │   │   └── Layout/
@@ -147,6 +175,15 @@ type TimeRecord = {
 │       ├── Features/
 │       └── CTAButton/
 ├── features/
+│   ├── admin/
+│   │   ├── api/
+│   │   │   ├── employee.ts
+│   │   │   └── timeRecord.ts
+│   │   ├── hooks/
+│   │   │   ├── useEmployeeManagement.ts
+│   │   │   └── useTimeRecordManagement.ts
+│   │   └── types/
+│   │       └── index.ts
 │   ├── company/
 │   │   ├── api/
 │   │   │   └── company.ts
@@ -162,6 +199,11 @@ type TimeRecord = {
 │       │   └── timecard.ts
 │       └── types/
 │           └── index.ts
+├── hooks/
+│   └── index.ts
+├── lib/
+│   └── utils/
+│       └── index.ts
 ├── types/
 │   └── index.ts (型定義のre-export)
 └── ... // 他のディレクトリ
