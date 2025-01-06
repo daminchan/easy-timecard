@@ -1,4 +1,5 @@
-import type { Employee, TimeRecord, WorkStatus } from '@/types';
+import type { Employee, TimeRecord } from '@/types';
+import type { WorkStatus } from '@/features/timecard/types';
 
 /** タイムカードアクションのレスポンス型 */
 export type TimeRecordActionResponse = {
