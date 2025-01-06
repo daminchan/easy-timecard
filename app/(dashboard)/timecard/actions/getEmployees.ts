@@ -24,29 +24,29 @@ export const getEmployees = async (): Promise<GetEmployeesResponse> => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // 従業員データと今日のタイムレコードを取得
-    const [employees, timeRecords] = await Promise.all([
-      prisma.employee.findMany({
-        where: {
+    // 従業員データを取得
+    const employees = await prisma.employee.findMany({
+      where: {
+        companyId: userId,
+        isActive: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+
+    // タイムレコードを取得
+    const timeRecords = await prisma.timeRecord.findMany({
+      where: {
+        employee: {
           companyId: userId,
-          isActive: true,
         },
-        orderBy: {
-          name: 'asc',
+        date: {
+          gte: today,
+          lt: tomorrow,
         },
-      }),
-      prisma.timeRecord.findMany({
-        where: {
-          employee: {
-            companyId: userId,
-          },
-          date: {
-            gte: today,
-            lt: tomorrow,
-          },
-        },
-      }),
-    ]);
+      },
+    });
 
     return {
       success: true,
