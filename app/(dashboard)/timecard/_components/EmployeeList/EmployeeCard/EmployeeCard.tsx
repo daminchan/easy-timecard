@@ -1,5 +1,6 @@
 import { FC } from 'react';
-import { type Employee, type TimeRecord, type WorkStatus } from '@/types';
+import { type Employee, type TimeRecord } from '@/types';
+import { type WorkStatus } from '@/features/timecard/types';
 import { Clock, Coffee, LogOut } from 'lucide-react';
 
 type Props = {
