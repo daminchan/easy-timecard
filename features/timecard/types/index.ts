@@ -15,9 +15,9 @@ export type TimeRecord = {
   /** 退勤時刻 */
   clockOut: Date | null;
   /** 総勤務時間（分） */
-  totalWorkMinutes: number;
+  totalWorkMinutes: number | null;
   /** 総休憩時間（分） */
-  totalBreakMinutes: number;
+  totalBreakMinutes: number | null;
   /** 作成日時 */
   createdAt: Date;
   /** 更新日時 */

@@ -1,17 +1,36 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { type Employee } from '@/types';
+import { type Employee, type TimeRecord } from '@/types';
 import { EmployeeList } from './_components/EmployeeList';
 import { TimeCardModal } from './_components/TimeCardModal';
-import { mockEmployees, mockTodayTimeRecords } from '@/mocks/data';
 import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { type TimeRecordActionResponse } from './actions/types';
 
-export const TimeCardPage: FC = () => {
+type Props = {
+  initialEmployees: Employee[];
+  initialTimeRecords: TimeRecord[];
+  clockIn: (employeeId: string) => Promise<TimeRecordActionResponse>;
+  startBreak: (employeeId: string) => Promise<TimeRecordActionResponse>;
+  endBreak: (employeeId: string) => Promise<TimeRecordActionResponse>;
+  clockOut: (employeeId: string) => Promise<TimeRecordActionResponse>;
+};
+
+export const TimeCardPage: FC<Props> = ({
+  initialEmployees,
+  initialTimeRecords,
+  clockIn,
+  startBreak,
+  endBreak,
+  clockOut,
+}) => {
+  const { toast } = useToast();
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [showTimeCheck, setShowTimeCheck] = useState(false);
+  const [timeRecords, setTimeRecords] = useState<TimeRecord[]>(initialTimeRecords);
 
   const getCurrentTime = () => {
     const now = new Date();
@@ -27,6 +46,80 @@ export const TimeCardPage: FC = () => {
         weekday: 'long',
       }),
     };
+  };
+
+  const handleClockIn = async (employee: Employee) => {
+    const result = await clockIn(employee.id);
+    if (result.success && result.data) {
+      setTimeRecords((prev) => [...prev, result.data!]);
+      toast({
+        title: '出勤を記録しました',
+        description: `${employee.name}さんの出勤を記録しました。`,
+      });
+    } else {
+      toast({
+        title: 'エラー',
+        description: result.error ?? '出勤の記録に失敗しました。',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleStartBreak = async (employee: Employee) => {
+    const result = await startBreak(employee.id);
+    if (result.success && result.data) {
+      setTimeRecords((prev) =>
+        prev.map((record) => (record.id === result.data!.id ? result.data! : record))
+      );
+      toast({
+        title: '休憩開始を記録しました',
+        description: `${employee.name}さんの休憩開始を記録しました。`,
+      });
+    } else {
+      toast({
+        title: 'エラー',
+        description: result.error ?? '休憩開始の記録に失敗しました。',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEndBreak = async (employee: Employee) => {
+    const result = await endBreak(employee.id);
+    if (result.success && result.data) {
+      setTimeRecords((prev) =>
+        prev.map((record) => (record.id === result.data!.id ? result.data! : record))
+      );
+      toast({
+        title: '休憩終了を記録しました',
+        description: `${employee.name}さんの休憩終了を記録しました。`,
+      });
+    } else {
+      toast({
+        title: 'エラー',
+        description: result.error ?? '休憩終了の記録に失敗しました。',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleClockOut = async (employee: Employee) => {
+    const result = await clockOut(employee.id);
+    if (result.success && result.data) {
+      setTimeRecords((prev) =>
+        prev.map((record) => (record.id === result.data!.id ? result.data! : record))
+      );
+      toast({
+        title: '退勤を記録しました',
+        description: `${employee.name}さんの退勤を記録しました。`,
+      });
+    } else {
+      toast({
+        title: 'エラー',
+        description: result.error ?? '退勤の記録に失敗しました。',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -71,8 +164,8 @@ export const TimeCardPage: FC = () => {
             </div>
           </div>
           <EmployeeList
-            employees={mockEmployees}
-            timeRecords={mockTodayTimeRecords}
+            employees={initialEmployees}
+            timeRecords={timeRecords}
             onSelectEmployee={setSelectedEmployee}
           />
         </div>
@@ -110,24 +203,22 @@ export const TimeCardPage: FC = () => {
         <TimeCardModal
           isOpen={!!selectedEmployee}
           employee={selectedEmployee}
-          timeRecord={mockTodayTimeRecords.find(
-            (record) => record.employeeId === selectedEmployee.id
-          )}
+          timeRecord={timeRecords.find((record) => record.employeeId === selectedEmployee.id)}
           onClose={() => setSelectedEmployee(null)}
-          onClockIn={() => {
-            console.log('Clock in:', selectedEmployee);
+          onClockIn={async () => {
+            await handleClockIn(selectedEmployee);
             setSelectedEmployee(null);
           }}
-          onBreakStart={() => {
-            console.log('Break start:', selectedEmployee);
+          onBreakStart={async () => {
+            await handleStartBreak(selectedEmployee);
             setSelectedEmployee(null);
           }}
-          onBreakEnd={() => {
-            console.log('Break end:', selectedEmployee);
+          onBreakEnd={async () => {
+            await handleEndBreak(selectedEmployee);
             setSelectedEmployee(null);
           }}
-          onClockOut={() => {
-            console.log('Clock out:', selectedEmployee);
+          onClockOut={async () => {
+            await handleClockOut(selectedEmployee);
             setSelectedEmployee(null);
           }}
         />

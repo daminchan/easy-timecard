@@ -244,191 +244,433 @@ type TimeRecord = {
 - 統合テスト
 - E2E テスト（主要フロー）
 
-## アーキテクチャ設計の意図
+## アーキテクチャ設計の基本方針
+
+### 採用技術の理由
+
+1. **Server Actions採用**
+
+   - Next.js 13以降の推奨アーキテクチャに準拠
+   - APIエンドポイントの作成・管理が不要
+   - 型安全性の向上とクライアント・サーバー間の一貫性確保
+   - 各機能のactionsディレクトリに集約し、責務を明確化
+
+2. **featuresディレクトリ採用**
+
+   - ドメイン駆動設計（DDD）の考え方を取り入れ
+   - 機能ごとの独立性と再利用性の向上
+   - ビジネスロジックの集約と管理の容易さ
+   - 機能単位でのテストを容易に実現
+
+3. **Atomic Design不採用**
+   - 小規模アプリケーションのため、過度な抽象化を避ける
+   - コンポーネントの責務を明確にし、管理を容易にする
+   - 機能単位でのコンポーネント管理を優先
+   - 再利用性よりもメンテナンス性を重視
+
+### 主な特徴
+
+1. **動的ルーティング**
+
+   - `[id]`のような動的セグメントを使用した柔軟なルーティング
+   - 各ページに対応するClient Component（`〇〇〇Page.tsx`）を配置
+   - SEO対策としての適切なメタデータ管理
+   - エラーハンドリングとフォールバックの統一的な実装
+
+2. **コンポーネントの分離**
+
+   - ページ固有のコンポーネントは`_components`に配置
+   - 再利用可能なコンポーネントは`features`に配置
+   - UIコンポーネントは`components/ui`に配置
+   - 共通コンポーネントは`components/common`に配置
+
+3. **型安全性の確保**
+
+   - 厳密な型定義と型チェック
+   - 型定義ファイルの集中管理
+   - Server ActionsとClient Componentsの型の一貫性
+   - zodによるランタイムバリデーション
+
+4. **パフォーマンス最適化**
+   - Server ComponentsとClient Componentsの適切な使い分け
+   - 動的インポートによる必要なコードの遅延読み込み
+   - キャッシュ戦略の最適化
+   - バンドルサイズの最適化
+
+### 最適化されたディレクトリ構造
+
+```typescript
+src/
+├── app/
+│   ├── (auth)/
+│   │   ├── sign-in/
+│   │   │   ├── [[...sign-in]]/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── SignInPage.tsx
+│   │   │   └── layout.tsx
+│   │   └── employee-auth/
+│   │       ├── _components/
+│   │       │   ├── EmployeeSelector/
+│   │       │   └── PasscodeForm/
+│   │       ├── actions/
+│   │       │   └── updateEmployeeSession.ts
+│   │       ├── page.tsx
+│   │       └── EmployeeAuthPage.tsx
+│   ├── (dashboard)/
+│   │   ├── admin/
+│   │   │   ├── [id]/  // 従業員個別ページ
+│   │   │   │   ├── timecard/
+│   │   │   │   │   ├── _components/
+│   │   │   │   │   ├── actions/
+│   │   │   │   │   ├── page.tsx
+│   │   │   │   │   └── TimeCardPage.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── EmployeeDetailPage.tsx
+│   │   │   ├── employees/
+│   │   │   │   ├── _components/
+│   │   │   │   ├── actions/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── EmployeesPage.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── AdminPage.tsx
+│   │   └── timecard/
+│   │       ├── _components/
+│   │       ├── actions/
+│   │       ├── page.tsx
+│   │       └── TimeCardPage.tsx
+│   ├── (marketing)/
+│   │   ├── _components/
+│   │   ├── page.tsx
+│   │   └── MarketingPage.tsx
+│   ├── layout.tsx
+│   ├── not-found.tsx
+│   └── error.tsx
+├── features/
+│   ├── employee/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   └── types/
+│   ├── timecard/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   └── types/
+│   └── admin/
+│       ├── components/
+│       ├── hooks/
+│       └── types/
+├── components/
+│   ├── ui/
+│   └── common/
+├── lib/
+│   ├── auth/
+│   ├── db/
+│   └── utils/
+├── types/
+├── styles/
+└── middleware.ts
+```
 
 ### ディレクトリ構造の意図
 
-1. **ルーティングとビジネスロジックの分離**
+1. **app/ディレクトリ**
 
-   - `app/`ディレクトリはルーティングのみに使用
-   - ビジネスロジックは`features/`に配置
-   - 理由：Next.js の App Router の仕様に準拠し、意図しないルーティング生成を防止
+   - Next.js App Routerの規約に従ったルーティング構造
+   - 各ページごとにServer ComponentとClient Componentを明確に分離
+   - ページ固有のコンポーネントは\_componentsディレクトリに配置
+   - Server Actionsはactionsディレクトリに集約
+   - エラーハンドリングとメタデータの一元管理
 
-2. **機能モジュールの独立性**
+2. **features/ディレクトリ**
 
-   - 各機能は`features/`配下で完結
-   - 例：`features/employee/`には従業員関連の全てのロジックが含まれる
-   - 理由：機能の追加・削除が容易で、影響範囲が明確
+   - ドメインロジックとビジネスロジックの集約
+   - 再利用可能なコンポーネントとカスタムフックの管理
+   - 機能ごとの型定義を独立して管理
+   - コンポーネントの責務を明確に分離
+   - テスト容易性の確保
 
-3. **型定義の一元管理**
+3. **components/ディレクトリ**
 
-   - 各機能の型定義は`features/{domain}/types/`に配置
-     - `company/types/` - 企業関連の型定義
-     - `employee/types/` - 従業員関連の型定義
-     - `timecard/types/` - タイムカード関連の型定義
-   - ルートの`types/index.ts`は型の re-export のみを行う
-     - 他のコンポーネントからは`@/types`を通じて型を参照
-     - 実際の型定義は各機能ディレクトリに配置
-   - 理由：型定義の重複を防ぎ、一貫性を保持
+   - UIライブラリのコンポーネント（ui/）
+   - アプリケーション共通のコンポーネント（common/）
+   - ドメインに依存しない汎用的なコンポーネント
+   - 再利用性の高いコンポーネントの集約
 
-4. **API ロジックの集中管理**
+4. **lib/ディレクトリ**
+   - ユーティリティ関数の集約
+   - データベース接続やAPI呼び出しの共通処理
+   - 認証関連の共通処理
+   - 日付処理やバリデーションなどの共通ロジック
 
-   - API 関連のロジックは`features/{domain}/api/`に配置
-   - 理由：データフローの追跡が容易で、API の一貫性を保持
+### コンポーネント設計の原則
 
-### コード規約の意図
+1. **ページコンポーネントの分離**
 
-1. **型の一貫性**
+```typescript
+// app/(dashboard)/admin/employees/page.tsx
+export default async function Page() {
+  // データフェッチなど
+  return <EmployeesPage data={data} />;
+}
 
-   ```typescript
-   // 正しい例：型の再利用
-   import { type Employee } from '@/features/employee/types';
+// app/(dashboard)/admin/employees/EmployeesPage.tsx
+export const EmployeesPage: FC<Props> = ({ data }) => {
+  // クライアントサイドのロジック
+  return (/* UI実装 */);
+};
+```
 
-   // 誤った例：型の再定義
-   type Employee = {
-     // ... 同じ内容の再定義
-   };
-   ```
+2. **Server Actionsの配置**
 
-   理由：型の一貫性を保ち、メンテナンス性を向上
+```typescript
+// app/(dashboard)/admin/employees/actions/createEmployee.ts
+'use server';
 
-2. **コンポーネントの責任分離**
+export async function createEmployee(data: CreateEmployeeData) {
+  // バリデーションとデータ作成ロジック
+}
+```
 
-   ```typescript
-   // 正しい例：プレゼンテーショナルコンポーネント
-   export const EmployeeList: FC<Props> = ({ employees, onSelect }) => {
-     return (/* UIのみの実装 */);
-   };
+3. **型定義の管理**
 
-   // 正しい例：コンテナコンポーネント
-   export const EmployeeListContainer: FC = () => {
-     const employees = useEmployees();
-     return <EmployeeList employees={employees} onSelect={handleSelect} />;
-   };
+```typescript
+// features/employee/types/index.ts
+export type Employee = {
+  id: string;
+  name: string;
+  hourlyWage: number;
+  isAdmin: boolean;
+};
 
-   // 誤った例：責任の混在
-   export const EmployeeList: FC = () => {
-     const employees = useEmployees(); // ビジネスロジックとUIの混在
-     return (/* ... */);
-   };
-   ```
+// types/index.ts
+export type { Employee } from '@/features/employee/types';
+```
 
-   理由：テスト容易性とコードの再利用性の向上
+### メタデータとSEO対策
 
-3. **状態管理の一貫性**
+1. **動的メタデータ生成**
 
-   ```typescript
-   // 正しい例：Jotaiを使用した状態管理
-   import { atom, useAtom } from 'jotai';
+```typescript
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const employee = await getEmployee(params.id);
 
-   // 誤った例：異なる状態管理の混在
-   import { useState } from 'react';
-   import { atom } from 'jotai';
-   ```
-
-   理由：状態管理の一貫性を保ち、予測可能性を向上
-
-### 拡張時の注意点
-
-1. **新機能の追加**
-
-   - 新しい機能は必ず`features/`に新しいディレクトリとして追加
-   - 既存の型定義の拡張は既存ファイルで行う
-   - 理由：一貫性のある構造を維持
-
-2. **共通コンポーネントの追加**
-
-   - UI コンポーネントは`components/ui/`
-   - 機能コンポーネントは`components/common/`
-   - 理由：再利用可能なコンポーネントの管理を容易に
-
-3. **API の追加**
-   - 新しい API は対応する`features/{domain}/api/`に追加
-   - 理由：API の一貫性と追跡可能性の維持
+  return {
+    title: `${employee.name} - 従業員情報`,
+    description: `${employee.name}さんの勤怠情報`,
+    openGraph: {
+      title: `${employee.name} - 従業員情報`,
+      description: `${employee.name}さんの勤怠情報`,
+      type: 'profile',
+      modifiedTime: employee.updatedAt,
+    },
+  };
+}
+```
 
 ### 禁止事項
 
 1. **型定義の重複**
 
-   - 既存の型定義の再定義は禁止
+   - 各機能の型定義は必ずfeatures/{domain}/types/に配置
+   - 型の再定義は禁止
    - 必要な場合は既存の型を拡張
 
-   ```typescript
-   // 正しい例：型の拡張
-   type EmployeeWithDetails = Employee & {
-     additionalField: string;
-   };
+2. **Server ActionsとClient Componentsの混在**
 
-   // 誤った例：型の再定義
-   type Employee = {
-     /* ... */
+   - Server Actionsは必ずactionsディレクトリに配置
+   - Client Componentsは'use client'ディレクティブを明示的に使用
+   - 適切なエラーハンドリングの実装
+
+3. **不適切なディレクトリ構造**
+
+   - featuresディレクトリ外でのビジネスロジックの実装
+   - ページコンポーネント内でのServer Actions定義
+   - 共通コンポーネントのfeatures内での定義
+   - 型定義の重複や散在
+
+4. **パフォーマンスに影響を与える実装**
+   - 不必要なClient Components化
+   - 過度な状態管理の使用
+   - 適切なキャッシュ戦略の欠如
+   - 最適化されていないデータフェッチ
+
+### 型定義の構造と参照
+
+1. **ドメインモデルの型定義**
+
+   ```typescript
+   // features/timecard/types/index.ts
+   export type TimeRecord = {
+     id: string;
+     employeeId: string;
+     date: Date;
+     clockIn: Date | null;
+     clockOut: Date | null;
+     breakStart: Date | null;
+     breakEnd: Date | null;
+     totalWorkMinutes: number;
+     totalBreakMinutes: number;
+     createdAt: Date;
+     updatedAt: Date;
    };
    ```
 
-2. **ディレクトリ構造の変更**
+   - 基本的なエンティティの型定義は`features/{domain}/types/`に配置
+   - アプリケーション全体で再利用される型を定義
+   - データモデルに関連する型はここで定義
 
-   - 定義された構造からの逸脱は禁止
-   - 新しいパターンの導入は要議論
+2. **型の再エクスポート**
 
-3. **状態管理の混在**
-   - Jotai 以外の状態管理ライブラリの使用は禁止
-   - グローバル状態とローカル状態の適切な使い分け
+   ```typescript
+   // types/index.ts
+   export type { Company } from '@/features/company/types';
+   export type { Employee } from '@/features/employee/types';
+   export type { TimeRecord, WorkStatus } from '@/features/timecard/types';
+   ```
 
-### レビュー基準
+   - ルートの`types/index.ts`で全ての基本型を再エクスポート
+   - アプリケーション全体からの参照は`@/types`を通して行う
+   - 型定義の一元管理と参照の簡素化
 
-1. **型の使用**
+3. **機能固有の型定義**
 
-   - `any`の使用は却下
-   - 型キャストは原則却下
-   - 明示的な型定義の必要性
+   ```typescript
+   // app/(dashboard)/timecard/actions/types.ts
+   import type { Employee, TimeRecord } from '@/types';
 
-2. **コンポーネント設計**
+   export type TimeRecordActionResponse = {
+     success: boolean;
+     error?: string;
+   };
 
-   - 単一責任の原則の遵守
-   - プレゼンテーショナル/コンテナの分離
-   - 適切なディレクトリ配置
+   export type GetEmployeesResponse = {
+     success: boolean;
+     data?: {
+       employees: Employee[];
+       timeRecords: TimeRecord[];
+     };
+     error?: string;
+   };
+   ```
 
-3. **状態管理**
-   - Jotai の適切な使用
-   - 状態の最小限の保持
-   - 適切なスコープでの状態管理
+   - 特定の機能やアクションに固有の型は、その機能のディレクトリ内に定義
+   - レスポンス型、UI状態の型、バリデーション型など
+   - 基本型は`@/types`から参照
 
-### コンポーネント設計の追加例
+4. **型定義の参照規則**
 
-```typescript
-// 正しい例：マーケティングコンポーネント
-// components/marketing/Hero/Hero.tsx
-export const Hero: FC = () => {
-  return (
-    <section className="py-20">
-      <div className="container mx-auto px-4">
-        <h1>簡単な勤怠管理を、すべての企業に</h1>
-        <p>タブレット1台で始められるタイムカードアプリ</p>
-      </div>
-    </section>
-  );
-};
+   - ドメインモデルの型は`@/types`から参照
 
-// components/marketing/CTAButton/CTAButton.tsx
-export const CTAButton: FC = () => {
-  return (
-    <Link
-      href="/sign-in"
-      className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary/90"
-    >
-      登録企業様ログイン
-    </Link>
-  );
-};
+   ```typescript
+   import type { Employee, TimeRecord } from '@/types';
+   ```
 
-// app/(marketing)/page.tsx
-export default function HomePage() {
-  return (
-    <main>
-      <Hero />
-      <Features />
-      <CTAButton />
-    </main>
-  );
-}
-```
+   - 機能固有の型は相対パスで参照
+
+   ```typescript
+   import type { TimeRecordActionResponse } from './types';
+   ```
+
+   - 他の機能の型を直接参照することは禁止
+
+   ```typescript
+   // ❌ 禁止
+   import type { Employee } from '@/features/employee/types';
+   // ⭕️ 正しい
+   import type { Employee } from '@/types';
+   ```
+
+5. **命名規則**
+   - レスポンス型は`〇〇Response`
+   - リクエスト型は`〇〇Request`
+   - アクション型は`〇〇Action`
+   - 表示用データ型は`〇〇DisplayData`
+   - バリデーション型は`〇〇Validation`
+
+この型定義の構造により：
+
+- 型の一貫性を保持
+- 重複を防止
+- 変更管理を容易に
+- コード補完とエラーチェックの向上
+  が実現できます。
+
+### コードレビューチェックリスト
+
+1. **型定義の確認**
+
+   - [ ] 全ての型とプロパティにJSDocコメントが付与されているか
+   - [ ] ユーティリティ関数と型にJSDocコメントが付与されているか
+   - [ ] 基本型は`@/types`から適切にインポートされているか
+   - [ ] 型の命名が規約に従っているか（Response, Request, Action, DisplayData, Validationなど）
+
+2. **ファイル構成の確認**
+
+   - [ ] 機能ごとに適切にファイルが分割されているか
+   - [ ] 共通ロジックが適切に分離されているか
+   - [ ] `index.ts`で適切に再エクスポートされているか
+   - [ ] 不要なファイルが残っていないか
+
+3. **インポートの確認**
+
+   - [ ] ページコンポーネントでのインポートが適切か
+   - [ ] 型のインポートが適切か（`type`修飾子の使用）
+   - [ ] 相対パスでのインポートが適切か
+   - [ ] バレルインポートが適切に使用されているか
+
+4. **機能の網羅性**
+
+   - [ ] 要件で定義された全ての機能が実装されているか
+   - [ ] 各機能が適切に分離されているか
+   - [ ] 機能間の依存関係が適切か
+   - [ ] テストが必要な機能に対してテストが実装されているか
+
+5. **エラーハンドリング**
+
+   - [ ] 各アクションで適切なエラーハンドリングが実装されているか
+   - [ ] エラーメッセージが統一されているか
+   - [ ] 型安全なレスポンスが返却されているか
+   - [ ] エラー発生時のユーザー体験が考慮されているか
+
+6. **認証とバリデーション**
+
+   - [ ] 各アクションで認証チェックが実装されているか
+   - [ ] データの関連性チェックが実装されているか
+   - [ ] 状態遷移の妥当性チェックが実装されているか
+   - [ ] バリデーションエラーが適切にハンドリングされているか
+
+7. **コードスタイル**
+
+   - [ ] 'use server'ディレクティブが適切に配置されているか
+   - [ ] 命名規則が一貫しているか
+   - [ ] コメントが適切に記述されているか
+   - [ ] コードフォーマットが統一されているか
+
+8. **パフォーマンス**
+
+   - [ ] 不要な再レンダリングが発生していないか
+   - [ ] データフェッチが最適化されているか
+   - [ ] キャッシュが適切に使用されているか
+   - [ ] バンドルサイズへの影響が考慮されているか
+
+9. **セキュリティ**
+
+   - [ ] 認証・認可が適切に実装されているか
+   - [ ] データの検証が適切に行われているか
+   - [ ] 機密情報の扱いが適切か
+   - [ ] XSS対策が実装されているか
+
+10. **アクセシビリティ**
+    - [ ] セマンティックなHTML構造になっているか
+    - [ ] キーボード操作に対応しているか
+    - [ ] WAI-ARIAが適切に使用されているか
+    - [ ] カラーコントラストが適切か
+
+このチェックリストは、コードレビュー時に以下の目的で使用します：
+
+- コードの品質保証
+- 一貫性の確保
+- セキュリティの担保
+- パフォーマンスの最適化
+- アクセシビリティの確保
+
+各項目は、プロジェクトの要件や状況に応じて適宜カスタマイズしてください。

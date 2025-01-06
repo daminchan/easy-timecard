@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
-import Header from '@/components/common/Header/Header';
+import { Header } from '@/components/common/Header/Header';
 
 import './globals.css';
+import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="ja" className="h-full">
         <body className={`${inter.className} min-h-full bg-gray-50`}>
           <Header />
+          <Toaster />
           {children}
         </body>
       </html>

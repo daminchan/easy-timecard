@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String     @id @default(cuid())
+  name      String
+  employees Employee[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("companies")
+}
+
+model Employee {
+  id          String       @id @default(cuid())
+  companyId   String
+  name        String
+  hourlyWage  Int
+  isAdmin     Boolean      @default(false)
+  isActive    Boolean      @default(true)
+  passcode    String       
+  timeRecords TimeRecord[]
+  company     Company      @relation(fields: [companyId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([companyId])
+  @@map("employees")
+}
+
+model TimeRecord {
+  id               String    @id @default(cuid())
+  employeeId       String
+  date             DateTime  @db.Date
+  clockIn          DateTime?
+  breakStart       DateTime?
+  breakEnd         DateTime?
+  clockOut         DateTime?
+  totalWorkMinutes Int?
+  totalBreakMinutes Int?
+  employee         Employee  @relation(fields: [employeeId], references: [id])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([employeeId])
+  @@index([date])
+  @@map("time_records")
+} 
