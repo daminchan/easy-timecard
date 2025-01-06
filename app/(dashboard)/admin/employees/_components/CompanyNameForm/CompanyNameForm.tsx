@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,17 +17,18 @@ type Props = {
   open: boolean;
   /** モーダルを閉じる時のコールバック */
   onClose: () => void;
+  /** 会社名の値 */
+  value: string;
+  /** 会社名変更時のコールバック */
+  onChange: (value: string) => void;
   /** フォーム送信時のコールバック */
-  onSubmit: (name: string) => void;
+  onSubmit: () => void;
 };
 
-export const CompanyNameForm: FC<Props> = ({ open, onClose, onSubmit }) => {
-  const [companyName, setCompanyName] = useState('');
-
+export const CompanyNameForm: FC<Props> = ({ open, onClose, value, onChange, onSubmit }) => {
   const handleSubmit = () => {
-    if (!companyName.trim()) return;
-    onSubmit(companyName);
-    setCompanyName('');
+    if (!value.trim()) return;
+    onSubmit();
   };
 
   return (
@@ -45,15 +46,15 @@ export const CompanyNameForm: FC<Props> = ({ open, onClose, onSubmit }) => {
         <div className="space-y-4 pt-4">
           <Input
             placeholder="会社名"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
             className="h-12 transition-all duration-200 focus:scale-[1.01] focus:border-primary"
           />
           <div className="flex justify-end gap-2 pt-4 border-t border-primary/20">
             <Button variant="outline" onClick={onClose} className="min-w-[100px]">
               キャンセル
             </Button>
-            <Button onClick={handleSubmit} disabled={!companyName.trim()} className="min-w-[100px]">
+            <Button onClick={handleSubmit} disabled={!value.trim()} className="min-w-[100px]">
               登録
             </Button>
           </div>

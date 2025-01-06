@@ -48,81 +48,102 @@ export const EmployeesPage: FC<Props> = ({ initialEmployees, actions }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCreateEmployee = async (data: EmployeeFormInput) => {
-    const { success, data: employee } = await actions.createEmployee(data);
-    if (success && employee) {
-      setEmployees((prev) => [employee, ...prev]);
-      setShowCreateForm(false);
-      toast({
-        title: '成功',
-        description: '従業員を登録しました',
-      });
-    } else {
-      toast({
-        title: 'エラー',
-        description: '従業員の登録に失敗しました',
-        variant: 'destructive',
-      });
+    setIsLoading(true);
+    try {
+      const { success, data: employee } = await actions.createEmployee(data);
+      if (success && employee) {
+        setEmployees((prev) => [employee, ...prev]);
+        setShowCreateForm(false);
+        toast({
+          title: '成功',
+          description: '従業員を登録しました',
+        });
+      } else {
+        toast({
+          title: 'エラー',
+          description: '従業員の登録に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleUpdateEmployee = async (employee: Employee) => {
-    const { id, ...updateData } = employee;
-    const { success, data: updatedEmployee } = await actions.updateEmployee({
-      id,
-      ...updateData,
-    });
-    if (success && updatedEmployee) {
-      setEmployees((prev) =>
-        prev.map((emp) => (emp.id === updatedEmployee.id ? updatedEmployee : emp))
-      );
-      toast({
-        title: '成功',
-        description: '従業員情報を更新しました',
+    setIsLoading(true);
+    try {
+      const { id, ...updateData } = employee;
+      const { success, data: updatedEmployee } = await actions.updateEmployee({
+        id,
+        ...updateData,
       });
-    } else {
-      toast({
-        title: 'エラー',
-        description: '従業員情報の更新に失敗しました',
-        variant: 'destructive',
-      });
+      if (success && updatedEmployee) {
+        setEmployees((prev) =>
+          prev.map((emp) => (emp.id === updatedEmployee.id ? updatedEmployee : emp))
+        );
+        toast({
+          title: '成功',
+          description: '従業員情報を更新しました',
+        });
+      } else {
+        toast({
+          title: 'エラー',
+          description: '従業員情報の更新に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeleteEmployee = async (employeeId: string) => {
-    const { success } = await actions.deleteEmployee(employeeId);
-    if (success) {
-      setEmployees((prev) => prev.filter((emp) => emp.id !== employeeId));
-      toast({
-        title: '成功',
-        description: '従業員を削除しました',
-      });
-    } else {
-      toast({
-        title: 'エラー',
-        description: '従業員の削除に失敗しました',
-        variant: 'destructive',
-      });
+    setIsLoading(true);
+    try {
+      const { success } = await actions.deleteEmployee(employeeId);
+      if (success) {
+        setEmployees((prev) => prev.filter((emp) => emp.id !== employeeId));
+        toast({
+          title: '成功',
+          description: '従業員を削除しました',
+        });
+      } else {
+        toast({
+          title: 'エラー',
+          description: '従業員の削除に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleUpdateCompanyName = async () => {
     if (!companyName.trim()) return;
 
-    const { success } = await actions.updateCompanyName(companyName);
-    if (success) {
-      setShowCompanyNameForm(false);
-      toast({
-        title: '成功',
-        description: '会社名を更新しました',
-      });
-      // ページをリロードして新しい会社名を反映
-      window.location.reload();
-    } else {
-      toast({
-        title: 'エラー',
-        description: '会社名の更新に失敗しました',
-        variant: 'destructive',
-      });
+    setIsLoading(true);
+    try {
+      const { success } = await actions.updateCompanyName(companyName);
+      if (success) {
+        setShowCompanyNameForm(false);
+        setCompanyName('');
+        toast({
+          title: '成功',
+          description: '会社名を更新しました',
+        });
+        // ページをリロードして新しい会社名を反映
+        window.location.reload();
+      } else {
+        toast({
+          title: 'エラー',
+          description: '会社名の更新に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -205,6 +226,8 @@ export const EmployeesPage: FC<Props> = ({ initialEmployees, actions }) => {
       <CompanyNameForm
         open={showCompanyNameForm}
         onClose={() => setShowCompanyNameForm(false)}
+        value={companyName}
+        onChange={setCompanyName}
         onSubmit={handleUpdateCompanyName}
       />
     </div>
