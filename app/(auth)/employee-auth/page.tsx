@@ -52,7 +52,7 @@ export default async function EmployeeAuthPage() {
         <div className="bg-white px-6 py-8 shadow-xl ring-1 ring-gray-900/5 sm:rounded-xl sm:px-12">
           <div className="mb-6">
             <h2 className="text-center text-lg font-semibold text-gray-900">
-              従業員を選択してパスコードを入力
+              従業員を選択してパスコードを入力してください
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               タイムカードの記録や管理を行うには従業員認証が必要です
