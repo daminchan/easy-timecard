@@ -52,7 +52,7 @@ export const InitialAdminForm: FC<Props> = ({ onSubmit }) => {
     } catch (error) {
       toast({
         title: 'エラー',
-        description: '管理者の作成に失敗しました',
+        description: error instanceof Error ? error.message : '管理者の作成に失敗しました',
         variant: 'destructive',
       });
     } finally {
