@@ -1,5 +1,3 @@
-import { type TimeRecord } from '@/types';
-
 /** アクションのレスポンス型 */
 export type ActionResponse<T = void> = {
   /** 処理の成功可否 */

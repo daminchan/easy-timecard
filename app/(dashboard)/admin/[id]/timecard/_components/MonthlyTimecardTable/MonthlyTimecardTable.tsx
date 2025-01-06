@@ -17,13 +17,7 @@ import { Pencil, Trash2, Plus } from 'lucide-react';
 import { TimeRecordDialog } from './TimeRecordDialog';
 import { DeleteDialog } from './DeleteDialog';
 import { useToast } from '@/hooks/use-toast';
-import {
-  createTimeRecord,
-  updateTimeRecord,
-  deleteTimeRecord,
-  type ActionResponse,
-  type TimeRecordFormData,
-} from '../../actions/index';
+import { createTimeRecord, updateTimeRecord, deleteTimeRecord } from '../../actions/index';
 
 type Props = {
   /** 従業員情報 */

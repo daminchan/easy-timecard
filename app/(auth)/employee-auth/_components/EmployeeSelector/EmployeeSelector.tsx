@@ -69,7 +69,7 @@ export const EmployeeSelector: FC<Props> = ({ employees }) => {
     } catch (error) {
       toast({
         title: 'エラー',
-        description: '認証に失敗しました',
+        description: error instanceof Error ? error.message : '認証に失敗しました',
         variant: 'destructive',
       });
     } finally {

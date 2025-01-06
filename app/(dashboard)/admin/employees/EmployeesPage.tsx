@@ -1,27 +1,14 @@
 'use client';
 
-import { FC, useState, useEffect } from 'react';
+import { FC, useState } from 'react';
 import { type Employee } from '@/types';
 import { Button } from '@/components/ui/button';
 import { UserPlus, Users, Building2 } from 'lucide-react';
 import { EmployeeForm } from './_components/EmployeeForm';
 import { EmployeeList } from './_components/EmployeeList';
 import { useToast } from '@/hooks/use-toast';
-import {
-  createEmployee,
-  getEmployees,
-  updateEmployee,
-  deleteEmployee,
-  updateCompanyName,
-} from './actions/index';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { createEmployee, updateEmployee, deleteEmployee, updateCompanyName } from './actions/index';
+
 import { CompanyNameForm } from './_components/CompanyNameForm';
 
 /** 従業員フォームの入力値の型 */
