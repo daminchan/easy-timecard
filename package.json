@@ -11,6 +11,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "dependencies": {
+    "@clerk/backend": "^1.21.4",
     "@clerk/nextjs": "^6.9.6",
     "@hookform/resolvers": "^3.9.1",
     "@prisma/client": "^6.1.0",
