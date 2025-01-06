@@ -28,12 +28,6 @@ export const HeaderContent: FC = () => {
             >
               タイムカード
             </Link>
-            <Link
-              href="/admin/employees"
-              className="text-sm font-semibold text-gray-700 hover:text-primary-600"
-            >
-              従業員管理
-            </Link>
             <UserButton
               appearance={{
                 elements: {

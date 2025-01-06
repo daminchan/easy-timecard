@@ -4,11 +4,12 @@ import { FC, useState } from 'react';
 import { type Employee, type TimeRecord } from '@/types';
 import { EmployeeList } from './_components/EmployeeList';
 import { TimeCardModal } from './_components/TimeCardModal';
-import { Clock } from 'lucide-react';
+import { Clock, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { type TimeRecordActionResponse } from './actions/types';
+import { useRouter } from 'next/navigation';
 
 type Props = {
   initialEmployees: Employee[];
@@ -27,6 +28,7 @@ export const TimeCardPage: FC<Props> = ({
   endBreak,
   clockOut,
 }) => {
+  const router = useRouter();
   const { toast } = useToast();
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [showTimeCheck, setShowTimeCheck] = useState(false);
@@ -124,28 +126,62 @@ export const TimeCardPage: FC<Props> = ({
 
   return (
     <>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto space-y-8 px-4 py-8">
         {/* ヘッダーセクション */}
-        <div className="mb-8 rounded-lg bg-white p-6 shadow-md">
+        <div className="rounded-lg bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">タイムカード</h1>
-              <p className="mt-1 text-sm text-gray-500">{getCurrentTime().date}</p>
+            <div className="flex items-center gap-4">
+              <div className="rounded-full bg-blue-100 p-3">
+                <Clock className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">タイムカード</h1>
+                <p className="mt-1 text-sm text-gray-500">{getCurrentTime().date}</p>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => setShowTimeCheck(true)}
-              className="flex items-center gap-2 rounded-lg bg-primary-50 px-6 py-3 hover:bg-primary-100"
-            >
-              <Clock className="h-5 w-5 text-primary-600" />
-              <span className="text-lg font-bold text-primary-600">現在時刻を確認</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => router.push('/employee-auth')}
+                className="flex items-center gap-2"
+              >
+                <UserCog className="h-4 w-4" />
+                ユーザー切り替え
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowTimeCheck(true)}
+                className="flex items-center gap-2"
+              >
+                <Clock className="h-4 w-4" />
+                現在時刻を確認
+              </Button>
+            </div>
+          </div>
+
+          {/* 統計情報 */}
+          <div className="mt-6 grid grid-cols-1 gap-4 border-t border-gray-100 pt-6 sm:grid-cols-3">
+            <div className="rounded-lg bg-gray-50 p-4">
+              <p className="text-sm font-medium text-gray-500">総従業員数</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">{initialEmployees.length}</p>
+            </div>
+            <div className="rounded-lg bg-gray-50 p-4">
+              <p className="text-sm font-medium text-gray-500">勤務中</p>
+              <p className="mt-2 text-3xl font-bold text-green-600">
+                {timeRecords.filter((r) => r.clockIn && !r.clockOut).length}
+              </p>
+            </div>
+            <div className="rounded-lg bg-gray-50 p-4">
+              <p className="text-sm font-medium text-gray-500">休憩中</p>
+              <p className="mt-2 text-3xl font-bold text-yellow-600">
+                {timeRecords.filter((r) => r.breakStart && !r.breakEnd).length}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* 従業員一覧セクション */}
-        <div className="rounded-lg bg-white p-6 shadow-md">
+        <div className="rounded-lg bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">従業員一覧</h2>
             <div className="flex gap-2">

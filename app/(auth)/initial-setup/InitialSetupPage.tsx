@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { InitialEmployeeForm } from './_components/InitialEmployeeForm';
 import { createInitialAdmin } from './_action/createInitialAdmin';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, ShieldCheck } from 'lucide-react';
+import { Building2, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export const InitialSetupPage: FC = () => {
   const router = useRouter();
@@ -34,7 +35,7 @@ export const InitialSetupPage: FC = () => {
     } catch (error) {
       toast({
         title: 'エラー',
-        description: '管理者の作成に失敗しました',
+        description: error instanceof Error ? error.message : '管理者の作成に失敗しました',
         variant: 'destructive',
       });
     }
@@ -66,6 +67,24 @@ export const InitialSetupPage: FC = () => {
             </p>
           </div>
           <InitialEmployeeForm onSubmit={handleCreateAdmin} />
+          <div className="mt-6 text-center">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-2 text-gray-500">または</span>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              className="mt-4 w-full"
+              onClick={() => router.push('/employee-auth')}
+            >
+              <span>既に管理者アカウントをお持ちの方</span>
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
