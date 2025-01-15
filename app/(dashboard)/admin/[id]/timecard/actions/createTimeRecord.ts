@@ -7,6 +7,7 @@ import { type TimeRecord } from '@/types';
 import { revalidatePath } from 'next/cache';
 import { format } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
+import { createJSTDate } from '@/lib/utils/date';
 
 export async function createTimeRecord(
   employeeId: string,
@@ -33,20 +34,21 @@ export async function createTimeRecord(
 
     const { clockIn, clockOut, breakStart, breakEnd, date } = data;
 
-    // 日付をUTCで処理
-    const recordDate = new Date(date);
+    // 日付をUTCで処理（clockIn.tsと同じ方法）
+    const baseDate = new Date(date);
     const utcDate = new Date(
-      Date.UTC(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate())
+      Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 0, 0, 0)
     );
 
     // デバッグ用ログ出力
     console.log('=== Debug Log ===');
     console.log('Input date:', date);
+    console.log('Base date:', baseDate);
     console.log('UTC date:', utcDate);
     console.log('UTC formatted:', format(utcDate, 'yyyy-MM-dd HH:mm:ss'));
     console.log('JST formatted:', formatInTimeZone(utcDate, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss'));
 
-    // 既存の記録がないか確認
+    // 既存の記録がないか確認（UTCで比較）
     const existingRecord = await prisma.timeRecord.findFirst({
       where: {
         employeeId,
@@ -59,42 +61,36 @@ export async function createTimeRecord(
     }
 
     // 時刻をUTCに変換して保存
+    const createTimeInUTC = (timeStr: string | null) => {
+      if (!timeStr) return null;
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      // JSTの時刻をUTCに変換（-9時間）
+      const utcHours = hours - 9;
+      // 日付が変わる場合の調整
+      const finalDate = new Date(utcDate);
+      if (utcHours < 0) {
+        finalDate.setDate(finalDate.getDate() + 1);
+      }
+      return new Date(
+        Date.UTC(
+          finalDate.getFullYear(),
+          finalDate.getMonth(),
+          finalDate.getDate(),
+          utcHours < 0 ? utcHours + 24 : utcHours,
+          minutes
+        )
+      );
+    };
+
+    // 勤怠記録を作成
     const timeRecord = await prisma.timeRecord.create({
       data: {
         employeeId,
         date: utcDate,
-        clockIn: clockIn
-          ? new Date(
-              utcDate.getFullYear(),
-              utcDate.getMonth(),
-              utcDate.getDate(),
-              ...clockIn.split(':').map(Number)
-            )
-          : null,
-        clockOut: clockOut
-          ? new Date(
-              utcDate.getFullYear(),
-              utcDate.getMonth(),
-              utcDate.getDate(),
-              ...clockOut.split(':').map(Number)
-            )
-          : null,
-        breakStart: breakStart
-          ? new Date(
-              utcDate.getFullYear(),
-              utcDate.getMonth(),
-              utcDate.getDate(),
-              ...breakStart.split(':').map(Number)
-            )
-          : null,
-        breakEnd: breakEnd
-          ? new Date(
-              utcDate.getFullYear(),
-              utcDate.getMonth(),
-              utcDate.getDate(),
-              ...breakEnd.split(':').map(Number)
-            )
-          : null,
+        clockIn: createTimeInUTC(clockIn),
+        clockOut: createTimeInUTC(clockOut),
+        breakStart: createTimeInUTC(breakStart),
+        breakEnd: createTimeInUTC(breakEnd),
       },
     });
 
