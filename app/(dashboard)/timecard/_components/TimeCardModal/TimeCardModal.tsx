@@ -72,6 +72,13 @@ export const TimeCardModal: FC<Props> = ({
     minute: '2-digit',
   });
 
+  // 各アクションの有効/無効状態を判定
+  const canClockIn = !timeRecord?.clockIn; // 未完了の記録がない場合のみ可能
+  const canStartBreak = timeRecord?.clockIn && !timeRecord.clockOut && !timeRecord.breakStart;
+  const canEndBreak = timeRecord?.breakStart && !timeRecord.breakEnd && !timeRecord.clockOut;
+  const canClockOut =
+    timeRecord?.clockIn && !timeRecord.clockOut && (!timeRecord.breakStart || timeRecord.breakEnd);
+
   const handleAction = (action: ActionType) => {
     setConfirmAction(action);
   };
@@ -157,7 +164,7 @@ export const TimeCardModal: FC<Props> = ({
             size="lg"
             className="h-32 flex-col gap-2 bg-white"
             onClick={() => handleAction('出勤')}
-            disabled={!!timeRecord?.clockIn}
+            disabled={!canClockIn}
           >
             <div className="rounded-full bg-primary-50 p-3">
               <Clock className="h-6 w-6 text-primary-600" />
@@ -169,7 +176,7 @@ export const TimeCardModal: FC<Props> = ({
             size="lg"
             className="h-32 flex-col gap-2 bg-white"
             onClick={() => handleAction('休憩開始')}
-            disabled={!timeRecord?.clockIn || !!timeRecord.clockOut || !!timeRecord.breakStart}
+            disabled={!canStartBreak}
           >
             <div className="rounded-full bg-yellow-50 p-3">
               <Coffee className="h-6 w-6 text-yellow-600" />
@@ -181,7 +188,7 @@ export const TimeCardModal: FC<Props> = ({
             size="lg"
             className="h-32 flex-col gap-2 bg-white"
             onClick={() => handleAction('休憩終了')}
-            disabled={!timeRecord?.breakStart || !!timeRecord.breakEnd || !!timeRecord.clockOut}
+            disabled={!canEndBreak}
           >
             <div className="rounded-full bg-yellow-50 p-3">
               <Coffee className="h-6 w-6 text-yellow-600" />
@@ -193,11 +200,7 @@ export const TimeCardModal: FC<Props> = ({
             size="lg"
             className="h-32 flex-col gap-2 bg-white"
             onClick={() => handleAction('退勤')}
-            disabled={
-              !timeRecord?.clockIn ||
-              !!timeRecord.clockOut ||
-              (!!timeRecord.breakStart && !timeRecord.breakEnd)
-            }
+            disabled={!canClockOut}
           >
             <div className="rounded-full bg-blue-50 p-3">
               <LogOut className="h-6 w-6 text-blue-600" />
@@ -211,7 +214,7 @@ export const TimeCardModal: FC<Props> = ({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">出勤時刻</span>
                 <span className="font-medium">
-                  {timeRecord.clockIn.toLocaleTimeString('ja-JP', {
+                  {new Date(timeRecord.clockIn).toLocaleTimeString('ja-JP', {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
@@ -221,7 +224,7 @@ export const TimeCardModal: FC<Props> = ({
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">休憩開始</span>
                   <span className="font-medium">
-                    {timeRecord.breakStart.toLocaleTimeString('ja-JP', {
+                    {new Date(timeRecord.breakStart).toLocaleTimeString('ja-JP', {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
@@ -232,7 +235,7 @@ export const TimeCardModal: FC<Props> = ({
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">休憩終了</span>
                   <span className="font-medium">
-                    {timeRecord.breakEnd.toLocaleTimeString('ja-JP', {
+                    {new Date(timeRecord.breakEnd).toLocaleTimeString('ja-JP', {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}

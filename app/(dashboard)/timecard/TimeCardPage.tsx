@@ -34,6 +34,13 @@ export const TimeCardPage: FC<Props> = ({
   const [showTimeCheck, setShowTimeCheck] = useState(false);
   const [timeRecords, setTimeRecords] = useState<TimeRecord[]>(initialTimeRecords);
 
+  // 従業員の最新の未完了の記録を取得
+  const getLatestIncompleteRecord = (employeeId: string) => {
+    return timeRecords.find(
+      (record) => record.employeeId === employeeId && record.clockIn && !record.clockOut
+    );
+  };
+
   const getCurrentTime = () => {
     const now = new Date();
     return {
@@ -239,7 +246,7 @@ export const TimeCardPage: FC<Props> = ({
         <TimeCardModal
           isOpen={!!selectedEmployee}
           employee={selectedEmployee}
-          timeRecord={timeRecords.find((record) => record.employeeId === selectedEmployee.id)}
+          timeRecord={getLatestIncompleteRecord(selectedEmployee.id)}
           onClose={() => setSelectedEmployee(null)}
           onClockIn={async () => {
             await handleClockIn(selectedEmployee);
