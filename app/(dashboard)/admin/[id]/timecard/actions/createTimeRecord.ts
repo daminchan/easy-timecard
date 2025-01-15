@@ -7,7 +7,6 @@ import { type TimeRecord } from '@/types';
 import { revalidatePath } from 'next/cache';
 import { format } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
-import { createJSTDate } from '@/lib/utils/date';
 
 export async function createTimeRecord(
   employeeId: string,
