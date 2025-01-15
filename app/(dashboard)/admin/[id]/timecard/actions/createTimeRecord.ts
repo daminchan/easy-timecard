@@ -34,12 +34,17 @@ export async function createTimeRecord(
     const { clockIn, clockOut, breakStart, breakEnd, date } = data;
 
     // デバッグ用ログ出力 - 入力データ
-    console.log('=== Input Data Debug Log ===');
-    console.log('Raw input date:', date);
-    console.log('Raw clockIn time:', clockIn);
-    console.log('Raw clockOut time:', clockOut);
-    console.log('Raw breakStart time:', breakStart);
-    console.log('Raw breakEnd time:', breakEnd);
+    console.log('\n=== CreateTimeRecord Input ===');
+    console.log('Selected date:', {
+      raw: date,
+      formatted: format(new Date(date), 'yyyy-MM-dd HH:mm:ss xxx'),
+    });
+    console.log('Time inputs:', {
+      clockIn,
+      clockOut,
+      breakStart,
+      breakEnd,
+    });
 
     // 日付をUTCで処理
     const recordDate = new Date(date);
@@ -47,19 +52,12 @@ export async function createTimeRecord(
       Date.UTC(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate(), 0, 0, 0)
     );
 
-    // デバッグ用ログ出力 - 日付処理
-    console.log('\n=== Date Processing Debug Log ===');
-    console.log('recordDate:', {
-      raw: recordDate,
-      year: recordDate.getFullYear(),
-      month: recordDate.getMonth(),
-      date: recordDate.getDate(),
-      formatted: format(recordDate, 'yyyy-MM-dd HH:mm:ss'),
-    });
-    console.log('utcDate:', {
+    // デバッグ用ログ出力 - UTC変換
+    console.log('\n=== UTC Conversion ===');
+    console.log('UTC date:', {
       raw: utcDate,
-      formatted: format(utcDate, 'yyyy-MM-dd HH:mm:ss'),
-      jstFormatted: formatInTimeZone(utcDate, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss'),
+      formatted: format(utcDate, 'yyyy-MM-dd HH:mm:ss xxx'),
+      jstFormatted: formatInTimeZone(utcDate, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss xxx'),
     });
 
     // 既存の記録がないか確認
@@ -96,21 +94,6 @@ export async function createTimeRecord(
         )
       );
 
-      // デバッグ用ログ出力 - 時刻変換
-      console.log(`\n=== Time Conversion Debug Log (${timeStr}) ===`);
-      console.log('Input time:', timeStr);
-      console.log('JST hours:', hours);
-      console.log('UTC hours:', utcHours);
-      console.log('Final date:', {
-        raw: finalDate,
-        formatted: format(finalDate, 'yyyy-MM-dd HH:mm:ss'),
-      });
-      console.log('Result:', {
-        raw: result,
-        utcFormatted: format(result, 'yyyy-MM-dd HH:mm:ss'),
-        jstFormatted: formatInTimeZone(result, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss'),
-      });
-
       return result;
     };
 
@@ -127,30 +110,29 @@ export async function createTimeRecord(
     });
 
     // 作成されたレコードのログ
-    console.log('\n=== Created Record Debug Log ===');
-    console.log('Record:', {
-      ...timeRecord,
-      date: format(timeRecord.date, 'yyyy-MM-dd HH:mm:ss'),
-      clockIn: timeRecord.clockIn ? format(timeRecord.clockIn, 'yyyy-MM-dd HH:mm:ss') : null,
-      clockOut: timeRecord.clockOut ? format(timeRecord.clockOut, 'yyyy-MM-dd HH:mm:ss') : null,
+    console.log('\n=== Created Record ===');
+    console.log('Record in UTC:', {
+      date: format(timeRecord.date, 'yyyy-MM-dd HH:mm:ss xxx'),
+      clockIn: timeRecord.clockIn ? format(timeRecord.clockIn, 'yyyy-MM-dd HH:mm:ss xxx') : null,
+      clockOut: timeRecord.clockOut ? format(timeRecord.clockOut, 'yyyy-MM-dd HH:mm:ss xxx') : null,
       breakStart: timeRecord.breakStart
-        ? format(timeRecord.breakStart, 'yyyy-MM-dd HH:mm:ss')
+        ? format(timeRecord.breakStart, 'yyyy-MM-dd HH:mm:ss xxx')
         : null,
-      breakEnd: timeRecord.breakEnd ? format(timeRecord.breakEnd, 'yyyy-MM-dd HH:mm:ss') : null,
+      breakEnd: timeRecord.breakEnd ? format(timeRecord.breakEnd, 'yyyy-MM-dd HH:mm:ss xxx') : null,
     });
     console.log('Record in JST:', {
-      date: formatInTimeZone(timeRecord.date, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss'),
+      date: formatInTimeZone(timeRecord.date, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss xxx'),
       clockIn: timeRecord.clockIn
-        ? formatInTimeZone(timeRecord.clockIn, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss')
+        ? formatInTimeZone(timeRecord.clockIn, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss xxx')
         : null,
       clockOut: timeRecord.clockOut
-        ? formatInTimeZone(timeRecord.clockOut, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss')
+        ? formatInTimeZone(timeRecord.clockOut, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss xxx')
         : null,
       breakStart: timeRecord.breakStart
-        ? formatInTimeZone(timeRecord.breakStart, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss')
+        ? formatInTimeZone(timeRecord.breakStart, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss xxx')
         : null,
       breakEnd: timeRecord.breakEnd
-        ? formatInTimeZone(timeRecord.breakEnd, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss')
+        ? formatInTimeZone(timeRecord.breakEnd, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss xxx')
         : null,
     });
 

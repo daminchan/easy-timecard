@@ -38,20 +38,9 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
 
   // 月の日付一覧を生成
   const daysInMonth = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
+    start: startOfMonth(createJSTDate(currentMonth)),
+    end: endOfMonth(createJSTDate(currentMonth)),
   });
-
-  // デバッグ用ログ出力 - 月の日付生成
-  console.log('=== Month Generation Debug ===');
-  console.log('Current month:', {
-    raw: currentMonth,
-    formatted: format(currentMonth, 'yyyy-MM-dd'),
-  });
-  console.log(
-    'Days in month:',
-    daysInMonth.map((d) => format(d, 'yyyy-MM-dd'))
-  );
 
   // 勤務時間の計算
   const calculateWorkHours = (timeRecord: TimeRecord) => {
@@ -182,35 +171,28 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
           <TableBody>
             {daysInMonth.map((date) => {
               const timeRecord = timeRecords.find((record) => {
-                const recordDate = format(new Date(record.date), 'yyyy-MM-dd');
-                const calendarDate = format(date, 'yyyy-MM-dd');
-
-                // より具体的なデバッグログ
-                console.log('=== Date Comparison ===');
-                console.log('Calendar day being checked:', format(date, 'yyyy-MM-dd'));
-                console.log('Record being compared:', {
-                  rawDate: record.date,
-                  formattedDate: recordDate,
-                  calendarDate: calendarDate,
-                  matches: recordDate === calendarDate,
-                });
-
+                const recordDate = format(createJSTDate(new Date(record.date)), 'yyyy-MM-dd');
+                const calendarDate = format(createJSTDate(date), 'yyyy-MM-dd');
                 return recordDate === calendarDate;
               });
 
               return (
                 <TableRow key={date.toISOString()}>
-                  <TableCell>{format(date, 'M/d (E)', { locale: ja })}</TableCell>
+                  <TableCell>{format(createJSTDate(date), 'M/d (E)', { locale: ja })}</TableCell>
                   <TableCell>
-                    {timeRecord?.clockIn ? format(new Date(timeRecord.clockIn), 'HH:mm') : '-'}
+                    {timeRecord?.clockIn
+                      ? format(createJSTDate(new Date(timeRecord.clockIn)), 'HH:mm')
+                      : '-'}
                   </TableCell>
                   <TableCell>
-                    {timeRecord?.clockOut ? format(new Date(timeRecord.clockOut), 'HH:mm') : '-'}
+                    {timeRecord?.clockOut
+                      ? format(createJSTDate(new Date(timeRecord.clockOut)), 'HH:mm')
+                      : '-'}
                   </TableCell>
                   <TableCell>
                     {timeRecord?.breakStart && timeRecord?.breakEnd
-                      ? `${format(new Date(timeRecord.breakStart), 'HH:mm')} - ${format(
-                          new Date(timeRecord.breakEnd),
+                      ? `${format(createJSTDate(new Date(timeRecord.breakStart)), 'HH:mm')} - ${format(
+                          createJSTDate(new Date(timeRecord.breakEnd)),
                           'HH:mm'
                         )}`
                       : '-'}
