@@ -4,6 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import type { TimeRecordActionResponse } from './types';
 import { getExistingRecord } from './utils';
+import { createJSTDate } from '@/lib/utils/date';
 
 export async function endBreak(employeeId: string): Promise<TimeRecordActionResponse> {
   try {
@@ -30,10 +31,13 @@ export async function endBreak(employeeId: string): Promise<TimeRecordActionResp
       return { success: false, error: 'Already clocked out' };
     }
 
+    // 現在時刻をJSTで取得
+    const now = createJSTDate();
+
     // 休憩終了を記録
     const timeRecord = await prisma.timeRecord.update({
       where: { id: existingRecord.id },
-      data: { breakEnd: new Date() },
+      data: { breakEnd: now },
     });
 
     return { success: true, data: timeRecord };

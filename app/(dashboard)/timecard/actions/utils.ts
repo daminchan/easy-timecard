@@ -1,6 +1,8 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { createJSTDate } from '@/lib/utils/date';
+import { format } from 'date-fns';
 
 /** 既存の勤怠記録の取得結果型 */
 type ExistingRecordResult =
@@ -29,7 +31,7 @@ type ExistingRecordResult =
           breakStart: Date | null;
           breakEnd: Date | null;
         } | null;
-        /** 対象日（今日の0時0分0秒） */
+        /** 対象日（JSTの0時0分0秒） */
         today: Date;
       };
     };
@@ -57,9 +59,15 @@ export async function getExistingRecord(
     return { success: false, error: 'Employee not found' } as const;
   }
 
-  // 今日の日付を取得
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // 現在のJST日付を取得
+  const now = createJSTDate();
+  const today = new Date(format(now, 'yyyy-MM-dd'));
+
+  // デバッグ用ログ出力
+  console.log('=== Date Debug ===');
+  console.log('Now JST:', format(now, 'yyyy-MM-dd HH:mm:ss'));
+  console.log('Today:', today);
+  console.log('=================');
 
   // 既存の勤怠記録を確認
   const existingRecord = await prisma.timeRecord.findFirst({

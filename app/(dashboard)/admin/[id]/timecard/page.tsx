@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { MonthlyTimecardPage } from './MonthlyTimecardPage';
 import { format } from 'date-fns';
+import { createJSTDate, startOfJSTDay } from '@/lib/utils/date';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -37,14 +38,14 @@ export default async function Page({ params, searchParams }: PageProps) {
   }
 
   // 表示する月を決定（デフォルトは現在の月）
-  const today = new Date();
+  const today = createJSTDate();
   const defaultMonth = format(today, 'yyyy-MM');
   const monthParam = month ?? defaultMonth;
-  const targetMonth = new Date(`${monthParam}-01`);
+  const targetMonth = createJSTDate(new Date(`${monthParam}-01`));
 
-  // 月の開始日と終了日を計算
-  const startDate = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1);
-  const endDate = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0);
+  // 月の開始日と終了日を計算（JST）
+  const startDate = startOfJSTDay(new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1));
+  const endDate = startOfJSTDay(new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0));
 
   // 勤怠記録の取得
   const timeRecords = await prisma.timeRecord.findMany({

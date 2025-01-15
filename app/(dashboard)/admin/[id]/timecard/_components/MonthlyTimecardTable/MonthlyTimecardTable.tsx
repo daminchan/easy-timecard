@@ -18,6 +18,7 @@ import { TimeRecordDialog } from './TimeRecordDialog';
 import { DeleteDialog } from './DeleteDialog';
 import { useToast } from '@/hooks/use-toast';
 import { createTimeRecord, updateTimeRecord, deleteTimeRecord } from '../../actions/index';
+import { createJSTDate } from '@/lib/utils/date';
 
 type Props = {
   /** 従業員情報 */
@@ -37,8 +38,8 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
 
   // 月の日付一覧を生成
   const daysInMonth = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
+    start: startOfMonth(createJSTDate(currentMonth)),
+    end: endOfMonth(createJSTDate(currentMonth)),
   });
 
   // 勤務時間の計算
@@ -46,13 +47,14 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
     if (!timeRecord.clockIn || !timeRecord.clockOut) return null;
 
     let totalMinutes = 0;
-    const clockInTime = new Date(timeRecord.clockIn);
-    const clockOutTime = new Date(timeRecord.clockOut);
+    const clockInTime = createJSTDate(new Date(timeRecord.clockIn));
+    const clockOutTime = createJSTDate(new Date(timeRecord.clockOut));
 
     // 休憩時間を計算
     const breakMinutes =
       timeRecord.breakStart && timeRecord.breakEnd
-        ? (new Date(timeRecord.breakEnd).getTime() - new Date(timeRecord.breakStart).getTime()) /
+        ? (createJSTDate(new Date(timeRecord.breakEnd)).getTime() -
+            createJSTDate(new Date(timeRecord.breakStart)).getTime()) /
           (1000 * 60)
         : 0;
 
@@ -168,24 +170,38 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
           </TableHeader>
           <TableBody>
             {daysInMonth.map((date) => {
-              const timeRecord = timeRecords.find(
-                (record) =>
-                  format(new Date(record.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
-              );
+              const timeRecord = timeRecords.find((record) => {
+                const recordDate = format(createJSTDate(new Date(record.date)), 'yyyy-MM-dd');
+                const calendarDate = format(createJSTDate(date), 'yyyy-MM-dd');
+
+                // デバッグ用ログ出力
+                console.log('=== Date Comparison ===');
+                console.log('Record raw date:', record.date);
+                console.log('Record JST date:', recordDate);
+                console.log('Calendar date:', calendarDate);
+                console.log('Match:', recordDate === calendarDate);
+                console.log('====================');
+
+                return recordDate === calendarDate;
+              });
 
               return (
                 <TableRow key={date.toISOString()}>
-                  <TableCell>{format(date, 'M/d (E)', { locale: ja })}</TableCell>
+                  <TableCell>{format(createJSTDate(date), 'M/d (E)', { locale: ja })}</TableCell>
                   <TableCell>
-                    {timeRecord?.clockIn ? format(new Date(timeRecord.clockIn), 'HH:mm') : '-'}
+                    {timeRecord?.clockIn
+                      ? format(createJSTDate(new Date(timeRecord.clockIn)), 'HH:mm')
+                      : '-'}
                   </TableCell>
                   <TableCell>
-                    {timeRecord?.clockOut ? format(new Date(timeRecord.clockOut), 'HH:mm') : '-'}
+                    {timeRecord?.clockOut
+                      ? format(createJSTDate(new Date(timeRecord.clockOut)), 'HH:mm')
+                      : '-'}
                   </TableCell>
                   <TableCell>
                     {timeRecord?.breakStart && timeRecord?.breakEnd
-                      ? `${format(new Date(timeRecord.breakStart), 'HH:mm')} - ${format(
-                          new Date(timeRecord.breakEnd),
+                      ? `${format(createJSTDate(new Date(timeRecord.breakStart)), 'HH:mm')} - ${format(
+                          createJSTDate(new Date(timeRecord.breakEnd)),
                           'HH:mm'
                         )}`
                       : '-'}
@@ -196,33 +212,34 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
                       {timeRecord ? (
                         <>
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
-                            onClick={() => setSelectedRecord(timeRecord)}
-                            className="h-8 w-8"
+                            onClick={() => {
+                              setSelectedRecord(timeRecord);
+                              setSelectedDate(date);
+                            }}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
                             onClick={() => setRecordToDelete(timeRecord)}
-                            className="h-8 w-8 text-red-500 hover:text-red-600"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </>
                       ) : (
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => {
+                            setSelectedRecord(null);
                             setSelectedDate(date);
                             setShowCreateDialog(true);
                           }}
                         >
-                          <Plus className="mr-2 h-4 w-4" />
-                          記録
+                          <Plus className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
@@ -246,13 +263,13 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
         defaultValues={
           selectedRecord && selectedRecord.clockIn && selectedRecord.clockOut
             ? {
-                clockIn: format(new Date(selectedRecord.clockIn), 'HH:mm'),
-                clockOut: format(new Date(selectedRecord.clockOut), 'HH:mm'),
+                clockIn: format(createJSTDate(new Date(selectedRecord.clockIn)), 'HH:mm'),
+                clockOut: format(createJSTDate(new Date(selectedRecord.clockOut)), 'HH:mm'),
                 breakStart: selectedRecord.breakStart
-                  ? format(new Date(selectedRecord.breakStart), 'HH:mm')
+                  ? format(createJSTDate(new Date(selectedRecord.breakStart)), 'HH:mm')
                   : '',
                 breakEnd: selectedRecord.breakEnd
-                  ? format(new Date(selectedRecord.breakEnd), 'HH:mm')
+                  ? format(createJSTDate(new Date(selectedRecord.breakEnd)), 'HH:mm')
                   : '',
               }
             : undefined
@@ -264,7 +281,7 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
         open={!!recordToDelete}
         onClose={() => setRecordToDelete(null)}
         onConfirm={handleDelete}
-        date={recordToDelete ? new Date(recordToDelete.date) : null}
+        date={recordToDelete ? createJSTDate(new Date(recordToDelete.date)) : null}
       />
     </>
   );
