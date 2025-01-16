@@ -46,10 +46,10 @@ export async function createTimeRecord(
       breakEnd,
     });
 
-    // 日付をUTCで処理
+    // JSTの日付をUTCに変換（JST 00:00 = UTC 15:00 previous day）
     const recordDate = new Date(date);
     const utcDate = new Date(
-      Date.UTC(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate(), 0, 0, 0)
+      Date.UTC(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate() - 1, 15, 0, 0)
     );
 
     // デバッグ用ログ出力 - UTC変換

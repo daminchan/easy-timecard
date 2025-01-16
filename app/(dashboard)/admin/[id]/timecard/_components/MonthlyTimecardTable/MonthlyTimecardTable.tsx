@@ -34,7 +34,6 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
   const [selectedRecord, setSelectedRecord] = useState<TimeRecord | null>(null);
   const [recordToDelete, setRecordToDelete] = useState<TimeRecord | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   // 月の日付一覧を生成
   const daysInMonth = eachDayOfInterval({
@@ -70,16 +69,15 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
 
   // 勤怠記録を追加
   const handleCreate = async (data: {
+    date: string;
     clockIn: string;
     clockOut: string;
     breakStart: string;
     breakEnd: string;
   }) => {
-    if (!selectedDate) return;
-
     const result = await createTimeRecord(employee.id, {
       ...data,
-      date: selectedDate,
+      date: new Date(data.date),
     });
 
     if (result.success) {
@@ -99,6 +97,7 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
 
   // 勤怠記録を更新
   const handleUpdate = async (data: {
+    date: string;
     clockIn: string;
     clockOut: string;
     breakStart: string;
@@ -207,7 +206,6 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
                             size="icon"
                             onClick={() => {
                               setSelectedRecord(timeRecord);
-                              setSelectedDate(date);
                             }}
                           >
                             <Pencil className="h-4 w-4" />
@@ -220,19 +218,7 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setSelectedRecord(null);
-                            setSelectedDate(date);
-                            setShowCreateDialog(true);
-                          }}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      )}
+                      ) : null}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -248,14 +234,18 @@ export const MonthlyTimecardTable: FC<Props> = ({ employee, timeRecords, current
         onClose={() => {
           setShowCreateDialog(false);
           setSelectedRecord(null);
-          setSelectedDate(null);
         }}
         onSubmit={selectedRecord ? handleUpdate : handleCreate}
         defaultValues={
-          selectedRecord && selectedRecord.clockIn && selectedRecord.clockOut
+          selectedRecord
             ? {
-                clockIn: format(createJSTDate(new Date(selectedRecord.clockIn)), 'HH:mm'),
-                clockOut: format(createJSTDate(new Date(selectedRecord.clockOut)), 'HH:mm'),
+                date: format(createJSTDate(new Date(selectedRecord.date)), 'yyyy-MM-dd'),
+                clockIn: selectedRecord.clockIn
+                  ? format(createJSTDate(new Date(selectedRecord.clockIn)), 'HH:mm')
+                  : '',
+                clockOut: selectedRecord.clockOut
+                  ? format(createJSTDate(new Date(selectedRecord.clockOut)), 'HH:mm')
+                  : '',
                 breakStart: selectedRecord.breakStart
                   ? format(createJSTDate(new Date(selectedRecord.breakStart)), 'HH:mm')
                   : '',
